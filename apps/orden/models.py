@@ -6,7 +6,16 @@ from apps.stock.models import Producto
 class Orden(models.Model):
     fecha_hora = models.DateTimeField(null=False)
 
+    def get_total(self):
+        total = 0
+        detalle_ordenes = DetalleOrden.objects.all()
+        for detalle_orden in detalle_ordenes:
+            if detalle_orden.orden == self:
+                total += detalle_orden.productos.precio*detalle_orden.cantidad
+
+        return total
+    
 class DetalleOrden(models.Model):
-    orden = models.OneToOneField(Orden, on_delete=models.CASCADE)
+    orden = models.ForeignKey(Orden, on_delete=models.CASCADE)
     cantidad = models.IntegerField()
     productos = models.ForeignKey(Producto, on_delete=models.CASCADE)

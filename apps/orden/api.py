@@ -32,16 +32,17 @@ class DetalleOrdenViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def perform_update(self, serializer):
-        for field, value in serializer.validated_data.items():
-            if field == 'cantidad':
-                cantidad2 = serializer.validated_data.get('cantidad', None)
-                producto = serializer.validated_data.get('productos', None)
-                total = producto.stock - cantidad2
-                if total < 0:
-                    raise ValidationErr('No hay mas stock de este producto')
-            elif field == 'productos':
-                producto = serializer.validated_data.get('productos', None)
-                producto.save()
-        serializer.save()
+        producto = self.get_object().productos
+        cantidad = self.get_object().cantidad
+        totalStock = producto.stock + cantidad
+        cantidadPedida = serializer.validated_data.get('cantidad', None)
+        if totalStock - cantidadPedida < 0:
+           raise ValidationErr("no hay stock suficiente")
+
+        elif totalStock - cantidadPedida >= 0:
+            producto.stock = (totalStock - cantidadPedida)
+            producto.save()
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     
