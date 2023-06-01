@@ -14,6 +14,8 @@ class Orden(models.Model):
                 total += detalle_orden.productos.precio*detalle_orden.cantidad
 
         return total
+
+    
     
 class DetalleOrden(models.Model):
     orden = models.ForeignKey(Orden, on_delete=models.CASCADE)

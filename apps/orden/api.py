@@ -1,6 +1,9 @@
+import requests
+from rest_framework.generics import get_object_or_404
 from xml.dom import ValidationErr
 from apps.orden.models import Orden, DetalleOrden
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from rest_framework import viewsets, status
 from .serializers import OrdenSerializer, DetalleOrdenSerializer
 
@@ -18,6 +21,8 @@ class DetalleOrdenViewSet(viewsets.ModelViewSet):
         total = producto.stock - cantidad
         if total < 0:
             raise ValidationErr("no hay stock suficiente")
+        if cantidad <=0:
+            raise ValidationErr("No se puede pedir una cantidad menor o igual a 0")
         producto.stock -= cantidad
         producto.save()
         serializer.save()
@@ -36,7 +41,11 @@ class DetalleOrdenViewSet(viewsets.ModelViewSet):
         cantidad = self.get_object().cantidad
         totalStock = producto.stock + cantidad
         cantidadPedida = serializer.validated_data.get('cantidad', None)
-        if totalStock - cantidadPedida < 0:
+
+        if cantidadPedida <= 0:
+            raise ValidationErr("No se puede pedir una candidad menor que 0")
+
+        elif totalStock - cantidadPedida < 0:
            raise ValidationErr("no hay stock suficiente")
 
         elif totalStock - cantidadPedida >= 0:
