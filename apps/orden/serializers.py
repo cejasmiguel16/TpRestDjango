@@ -32,6 +32,8 @@ class OrdenSerializer(serializers.ModelSerializer):
         return obj.get_total()
 
 class DetalleOrdenSerializer(serializers.ModelSerializer):
+    nombre_producto = serializers.CharField(source='productos.nombre', read_only=True)
+
     class Meta:
         model = DetalleOrden
-        fields = '__all__'
+        fields = ['id','cantidad','orden','productos','nombre_producto']

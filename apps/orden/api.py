@@ -19,7 +19,7 @@ class DetalleOrdenViewSet(viewsets.ModelViewSet):
         producto = serializer.validated_data.get('productos', None)
         cantidad = serializer.validated_data.get('cantidad', None)
         orden = serializer.validated_data.get('orden', None)
-        pedidos = DetalleOrden.objects.all()
+        detalles = DetalleOrden.objects.all()
         total = producto.stock - cantidad
         
         if total < 0:
@@ -28,8 +28,8 @@ class DetalleOrdenViewSet(viewsets.ModelViewSet):
         if cantidad <=0:
             raise ValidationErr("NO SE PUEDE PEDIR UNA CANTIDAD MENOR O IGUAL A 0")
 
-        for pedido in pedidos:
-            if pedido.orden == orden and pedido.productos == producto:
+        for detalle in detalles:
+            if detalle.orden == orden and detalle.productos == producto:
                 raise ValidationErr('NO SE PUEDEN REPETIR PRODUCTOS EN EL PEDIDO')
 
         producto.stock -= cantidad

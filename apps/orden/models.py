@@ -15,6 +15,9 @@ class Orden(models.Model):
 
         return total
 
+    def __str__(self):
+        return f"Orden #{self.id} pedida en: {self.fecha_hora}"
+
     
     
 class DetalleOrden(models.Model):
