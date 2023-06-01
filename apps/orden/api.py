@@ -1,6 +1,6 @@
 import requests
 from rest_framework.generics import get_object_or_404
-from xml.dom import ValidationErr
+from rest_framework.exceptions import ValidationError
 from apps.orden.models import Orden, DetalleOrden
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -23,14 +23,14 @@ class DetalleOrdenViewSet(viewsets.ModelViewSet):
         total = producto.stock - cantidad
         
         if total < 0:
-            raise ValidationErr("NO HAY STOCK SUFICIENTE")
+            raise ValidationError("NO HAY STOCK SUFICIENTE")
         
         if cantidad <=0:
-            raise ValidationErr("NO SE PUEDE PEDIR UNA CANTIDAD MENOR O IGUAL A 0")
+            raise ValidationError("NO SE PUEDE PEDIR UNA CANTIDAD MENOR O IGUAL A 0")
 
         for detalle in detalles:
             if detalle.orden == orden and detalle.productos == producto:
-                raise ValidationErr('NO SE PUEDEN REPETIR PRODUCTOS EN EL PEDIDO')
+                raise ValidationError('NO SE PUEDEN REPETIR PRODUCTOS EN EL PEDIDO')
 
         producto.stock -= cantidad
         producto.save()
@@ -52,10 +52,10 @@ class DetalleOrdenViewSet(viewsets.ModelViewSet):
         cantidadPedida = serializer.validated_data.get('cantidad', None)
 
         if cantidadPedida <= 0:
-            raise ValidationErr("NO SE PUEDE PEDIR UNA CANTIDAD MENOR O IGUAL A 0")
+            raise ValidationError("NO SE PUEDE PEDIR UNA CANTIDAD MENOR O IGUAL A 0")
 
         elif totalStock - cantidadPedida < 0:
-           raise ValidationErr("NO HAY STOCK SUFICIENTE")
+           raise ValidationError("NO HAY STOCK SUFICIENTE")
 
         elif totalStock - cantidadPedida >= 0:
             producto.stock = (totalStock - cantidadPedida)
