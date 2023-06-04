@@ -1,5 +1,7 @@
 from django.db import models
 from apps.stock.models import Producto
+from django.db.models import Sum,F
+from django.db.models.functions import Cast
 
 # Create your models here.
 
@@ -7,11 +9,9 @@ class Orden(models.Model):
     fecha_hora = models.DateTimeField(null=False)
 
     def get_total(self):
-        total = 0
-        detalle_ordenes = DetalleOrden.objects.all()
-        for detalle_orden in detalle_ordenes:
-            if detalle_orden.orden == self:
-                total += detalle_orden.productos.precio*detalle_orden.cantidad
+        total = DetalleOrden.objects.filter(orden=self).aggregate(
+            total=Sum(F('productos__precio') * F('cantidad'))
+            )['total'] or 0
 
         return total
 

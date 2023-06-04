@@ -19,7 +19,7 @@ class DetalleOrdenViewSet(viewsets.ModelViewSet):
         producto = serializer.validated_data.get('productos', None)
         cantidad = serializer.validated_data.get('cantidad', None)
         orden = serializer.validated_data.get('orden', None)
-        detalles = DetalleOrden.objects.all()
+        detalles = DetalleOrden.objects.filter(orden=orden)
         total = producto.stock - cantidad
         
         if total < 0:
@@ -29,7 +29,7 @@ class DetalleOrdenViewSet(viewsets.ModelViewSet):
             raise ValidationError("NO SE PUEDE PEDIR UNA CANTIDAD MENOR O IGUAL A 0")
 
         for detalle in detalles:
-            if detalle.orden == orden and detalle.productos == producto:
+            if detalle.productos == producto:
                 raise ValidationError('NO SE PUEDEN REPETIR PRODUCTOS EN EL PEDIDO')
 
         producto.stock -= cantidad
@@ -48,16 +48,22 @@ class DetalleOrdenViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         producto = self.get_object().productos
         cantidad = self.get_object().cantidad
+        orden = self.get_object().orden
         totalStock = producto.stock + cantidad
+        detalles = DetalleOrden.objects.filter(orden=orden)
         cantidadPedida = serializer.validated_data.get('cantidad', None)
 
         if cantidadPedida <= 0:
             raise ValidationError("NO SE PUEDE PEDIR UNA CANTIDAD MENOR O IGUAL A 0")
 
-        elif totalStock - cantidadPedida < 0:
+        if totalStock - cantidadPedida < 0:
            raise ValidationError("NO HAY STOCK SUFICIENTE")
 
-        elif totalStock - cantidadPedida >= 0:
+        for detalle in detalles:
+            if detalle.productos == producto:
+                raise ValidationError('NO SE PUEDEN REPETIR PRODUCTOS EN EL PEDIDO')
+
+        if totalStock - cantidadPedida >= 0:
             producto.stock = (totalStock - cantidadPedida)
             producto.save()
             serializer.save()
