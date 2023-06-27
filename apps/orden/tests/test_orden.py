@@ -13,8 +13,8 @@ def test_api_recuperar_orden(api_client, crear_orden, crear_productos):
     client = api_client
     orden = crear_orden
     producto1, producto2 = crear_productos
-    detalle1 = crear_detalle_orden(orden, 15, producto1)
-    detalle1 = crear_detalle_orden(orden, 5, producto2)
+    #detalle1 = crear_detalle_orden(orden, 15, producto1)
+    #detalle1 = crear_detalle_orden(orden, 5, producto2)
 
     data1 = {
         "orden": orden.pk,
@@ -34,23 +34,11 @@ def test_api_recuperar_orden(api_client, crear_orden, crear_productos):
 # sea menor o igual al stock del producto.
 
 @pytest.mark.django_db
-def test_api_recuperar_orden(api_client, crear_orden, crear_productos):
+def test_api_crear_DetalleOrden(api_client, crear_orden, crear_productos):
     client = api_client
     orden = crear_orden
     producto1, producto2 = crear_productos
     stock_anterior = producto1.stock
-    #detalle1 = crear_detalle_orden(orden, 15, producto1)
-    #detalle1 = crear_detalle_orden(orden, 5, producto2)
-
-    data1 = {
-        "orden": orden.pk,
-        "fecha_hora": orden.fecha_hora
-    }
-
-    #Se creo la orden correctamente
-    response = client.get('/api/orden/', data = data1)
-    assert response.status_code == 200
-    assert Orden.objects.count() == 1
 
     #Se actualizo el stock?
     data2={
@@ -67,13 +55,22 @@ def test_api_recuperar_orden(api_client, crear_orden, crear_productos):
 #3
 #Verificar que al ejecutar el endpoint de creación de una orden, se produzca un fallo al 
 #intentar crear una orden cuyo detalle tenga productos repetidos. 
-    
-    data3 = {
+
+@pytest.mark.django_db
+def test_api_crear_DetalleOrden_producto_repetido(api_client, crear_orden, crear_productos):
+    client = api_client
+    orden = crear_orden
+    producto1, producto2 = crear_productos
+    stock_anterior = producto1.stock
+
+    crear_detalle_orden(orden,1,producto1)
+
+    data = {
         "orden":orden.pk,
-        "cantidad": 1,
+        "cantidad": 10,
         "productos" : producto1.pk
     }
-    response2 = client.post('/api/detalle/', data = data2)
+    response2 = client.post('/api/detalle/', data = data)
     assert response2.status_code == 400
     assert DetalleOrden.objects.filter(orden = orden.pk, productos = producto1.pk).count() == 1
 
